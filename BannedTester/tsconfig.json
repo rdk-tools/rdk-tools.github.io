@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+      "target": "es5",
+      "module": "commonjs",
+      "lib": ["es2015", "dom"],
+      "outDir": "js",
+      "rootDir": "src",
+      "strict": true,
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"]
+}

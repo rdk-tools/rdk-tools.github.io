@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <link rel="stylesheet" href="css/fonts.css" type="text/css">
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/skeleton.css">
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/hearthstone.css">
+
+        <title>Banned Card Tester</title>
+    </head>
+
+    <body>
+        <div class="row header">
+            <h2 class="title">Banned Cards Checker V1.0</h2>
+        </div>
+        <div class="container">
+            <div class="row">
+                <label for="deckStringArea">Search card</label>
+                
+                <textarea class="u-full-width" id="search-query" onkeyup="searchCard();"></textarea> 
+                <div class="tooltip tooltip-unclicked" id="tooltip">
+                    <input type="button" value="Copy Banlist" onclick="copyBanlistToClipboard();" class="button-primary"> 
+                    <span class="tooltip-text">Copied!</span>
+                </div>
+                <div>
+                    <div class="six columns">
+                        <label>Cards:</label>
+                        <ul class="card-deck" id="search-bar"></ul>
+                    </div>
+                    <div class="six columns">
+                        <label>Banned Cards:</label>
+                        <ul class="card-deck" id="banlist"></ul>
+                </div>
+                </div>
+            </div>
+        </div>
+        <script src="js/card_deck.js"></script>
+        <script src="js/banlist.js"></script>
+    </body>
+</html>

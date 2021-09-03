@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <link rel="stylesheet" href="css/fonts.css" type="text/css">
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/skeleton.css">
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/hearthstone.css">
+
+        <title>Banned Card Tester</title>
+    </head>
+
+    <body>
+        <div class="row header">
+            <h2 class="title">Banned Cards Checker V1.0</h2>
+        </div>
+        <div class="container">
+            <div class="row">
+                <label for="deckStringArea">Deck String</label>
+                
+                <textarea class="u-full-width" id="deck-string"></textarea> 
+                
+                <input type="button" id='load-button' value="Test" onclick="loadDeck();" class="button-primary" disabled>
+
+                <div id="app">
+                    
+                </div>
+            </div>
+        </div>
+        <script src="js/card_deck.js"></script>
+        <script src="js/app.js"></script>
+    </body>
+</html>
