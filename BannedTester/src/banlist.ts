@@ -1,103 +1,73 @@
-let banlist = new Set();
+// Represents a Banlist, i.e. a list of cards that aren't 
+// allowed in a tournament.
+interface IBanlist {
+    isCardBanned(card: IDeckCard, deck: Deck): boolean;
+}
 
-function searchCard() {
-    if (!database)
-        return;
+class CardBasedBanlist implements IBanlist {
+    bannedCardsDbfIds: Set<number>;
+    
+    constructor(bannedCardsDbfIds: number[]) {
+        this.bannedCardsDbfIds = new Set(bannedCardsDbfIds);
+    }
 
-    let root = document.getElementById("search-bar") as HTMLUListElement;
-    let searchArea = document.getElementById("search-query") as HTMLElement | any;
-    let searchQuery = searchArea.value;
-
-    root.innerHTML = "";
-    let filteredCards = filterCards(searchQuery);
-
-    for (let card of filteredCards) {
-        let cardDiv = generateCardDiv(card);
-        cardDiv.className += " clickable";
-
-        cardDiv.onclick = (ev) => {
-            let div: HTMLElement | any = ev.target as HTMLElement | any;
-            while (div.className.indexOf("clickable") == -1 || !div.parentNode)
-                div = div.parentNode;
-
-            if (div.dataset.dbfid)
-                addToBanlist(div.dataset.dbfid)
-        };
-        root.appendChild(cardDiv);
+    isCardBanned(card: IDeckCard, deck: Deck): boolean {
+        return this.bannedCardsDbfIds.has(card.cardData.dbfId);
     }
 }
 
-async function copyBanlistToClipboard(){
-    if (banlist.size <= 0) return;
+class SetBasedBanlist implements IBanlist {
+    bannedSets: Set<string>;
 
-    let banlistString = JSON.stringify(Array.from(banlist).map(x => parseInt(x as string)));
+    constructor(bannedSets: string[]) {
+        this.bannedSets = new Set(bannedSets);
+    }
 
-    await navigator.clipboard.writeText(banlistString);
-
-    (document.getElementById("tooltip") as HTMLElement).className = "tooltip tooltip-clicked"
-
-    window.setTimeout(() => (document.getElementById("tooltip") as HTMLElement).className = "tooltip tooltip-unclicked", 1000);
-
-    console.log("Copied!");
-}
-
-function updateBanlist() {
-    let banlistDiv = document.getElementById("banlist") as HTMLUListElement;
-    banlistDiv.innerHTML = "";
-    let banlistArr = Array.from(banlist) as string[];
-
-    for (let cardId of banlistArr) {
-        let id = parseInt(cardId.toString());
-        let cardDiv = generateCardDiv(getFromDatabase(id, 1));
-        cardDiv.className += " clickable";
-
-        cardDiv.onclick = (ev) => {
-            let div: HTMLElement | any = ev.target as HTMLElement | any;
-            while (div.className.indexOf("clickable") == -1 || !div.parentNode)
-                div = div.parentNode;
-
-            if (div.dataset.dbfid)
-                removeFromBanlist(div.dataset.dbfid)
-        };
-
-        banlistDiv.appendChild(cardDiv);
+    isCardBanned(card: IDeckCard, deck: Deck): boolean {
+        return this.bannedSets.has(card.cardData.set);
     }
 }
 
-function removeFromBanlist(dbfId: number) {
-    let oldLen = banlist.size;
-    banlist.delete(dbfId);
-    if (banlist.size != oldLen) {
-        updateBanlist();
-        searchCard();
-    }
-}
+// Represents multiple banlists, divided only by class
+class ClassBasedBanlist {
+    cardBanlists: {[heroClass: string]: CardBasedBanlist};
 
-function addToBanlist(dbfId: number) {
-    let oldLen = banlist.size;
-    banlist.add(dbfId);
-    if (banlist.size != oldLen) {
-        updateBanlist();
-        searchCard();
-    }
-}
+    constructor(banlists: {[heroClass: string]: number[]}) {
+        this.cardBanlists = {};
 
-function filterCards(query: string): ICard[] {
-    let result: ICard[] = [];
-
-    for (let card of database) {
-        if (
-            (card['name'].toLowerCase()).indexOf(query.toLowerCase()) >= 0 && 
-            card['collectible'] && 
-            !banlist.has(card['dbfId'].toString()) &&
-            card['cost'] != undefined
-        ){
-            result.push(rawToCard(card, 1));
-        }
-        if (result.length > 10){
-            break;
+        for (let heroClass in banlists) {
+            this.cardBanlists[heroClass] = new CardBasedBanlist(banlists[heroClass]);
         }
     }
 
-    return result;
+    isCardBanned(card: IDeckCard, deck: Deck): boolean {
+        if (!this.cardBanlists.hasOwnProperty(deck.heroClass))
+            return false;
+        return this.cardBanlists[deck.heroClass].isCardBanned(card, deck);
+    }
+}
+
+// Represents a set of banlists, that will all be checked
+// to return which cards are banned in a deck.
+class BanlistCollection {
+    banlists: IBanlist[];
+
+    constructor(banlists: IBanlist[]) {
+        this.banlists = banlists;
+    }
+
+    getBannedCards(deck: Deck): IDeckCard[] {
+        let bannedCards: IDeckCard[] = []
+        
+        for (let card of deck.cards) {
+            for (let banlist of this.banlists) {
+                if (banlist.isCardBanned(card, deck)){
+                    bannedCards.push(card);
+                    break;
+                }
+            }
+        }
+
+        return bannedCards;
+    }
 }
